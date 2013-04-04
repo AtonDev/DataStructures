@@ -7,7 +7,14 @@ public abstract class BitTrie {
 	/** The empty Trie. */
 	public static final BitTrie EMPTY = new EmptyTrie();
 	
-	
+	/** Returns the number of children of the trie. */
+	abstract protected int children();
+
+	/** Decrements and returns the number of children of the trie. */
+	abstract protected int decrementChildren();
+
+	/** Increments and returns the number of children of the trie. */
+	abstract protected int incrementChildren();
 
 	/** The label at this node. Defined only on leaves. */
 	abstract public int label() throws Exception;
@@ -76,6 +83,7 @@ public abstract class BitTrie {
 			}
 		} else {
 			setChild(bit, child(bit).insert(num, level + 1));
+			incrementChildren();
 			return this;
 		}
 	}
@@ -86,10 +94,49 @@ public abstract class BitTrie {
 
 
 	/** The result of removing X from this Trie, if it is present.
-	* The trie is unchanged if X is not present. */
-	public BitTrie remove(int x) {
-		return null;
+	 *  The trie is unchanged if X is not present. */
+	public BitTrie remove(int x) throws Exception {
+		return remove(x, 0);
 	}
+
+
+	/** Removes NUM from this trie, which is assumed to be at 
+	 *  LEVEL, and returns the resulting trie. */
+	private BitTrie remove(int num, int level) throws Exception {
+		if (isEmpty()) 
+			return this;
+		if (isLeaf()) {
+			if (num == label()) {
+				return EMPTY;
+			} else {
+				return this;
+			}
+		}
+		int bit = getBit(num, level);
+		setChild(bit, child(bit).remove(num, level + 1));
+		decrementChildren();
+		int d = onlyMember();
+		if (d >= 0)
+			return child(d);
+		return this;
+	}
+
+	/** Returns 1 or 0 if there a single int in the trie starting
+	 *  at child 1 or 0 respectively. returns -1 otherwise. **/
+	private int onlyMember() {
+		if (children() == 1) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+
+
+
+
+
+
+
 
 	/* some utility methods declaration. */
 
@@ -117,6 +164,9 @@ class EmptyTrie extends BitTrie {
 	public int label() throws Exception {throw new Exception();}
 	public BitTrie child(int k) throws Exception {throw new Exception();}
 	public void setChild(int k, BitTrie child) throws Exception {throw new Exception();}
+	protected int children() {return 0;}
+	protected int incrementChildren() {return 0;}
+	protected int decrementChildren() {return 0;}
 }
 
 
@@ -132,10 +182,14 @@ class LeafTrie extends BitTrie {
 	public int label() throws Exception {return label;}
 	public BitTrie child(int k) throws Exception {return EMPTY;}
 	public void setChild(int k, BitTrie child) throws Exception {throw new Exception();}
+	protected int children() {return 1;}
+	protected int incrementChildren() {return 1;}
+	protected int decrementChildren() {return 1;}
 }
 
 /** Representation of an inner trie. */
 class InnerTrie extends BitTrie {
+	int cNum = 0;
 	int val;
 	BitTrie zero;
 	BitTrie one;
@@ -143,6 +197,7 @@ class InnerTrie extends BitTrie {
 	/** Constructor. A trie with val VALUE and child at 
 	 *  indexValue equals to CHILD. */
 	InnerTrie(int childValue, BitTrie child) {
+		cNum = 1;
 		if (childValue == 0) {
 			zero = child;
 		} else {
@@ -167,6 +222,16 @@ class InnerTrie extends BitTrie {
 			one = child;
 		}
 	}
-
+	protected int children() {
+		return cNum;
+	}
+	protected int incrementChildren() {
+		cNum += 1;
+		return cNum;
+	}
+	protected int decrementChildren() {
+		cNum -= 1;
+		return cNum;
+	}
 }
 
