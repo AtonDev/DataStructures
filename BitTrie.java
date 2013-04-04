@@ -1,26 +1,25 @@
 
-
-import java.lang.Exception;
-
-
 public abstract class BitTrie {
 
 	/** An empty trie. */
 	static protected final BitTrie EMPTY = new EmptyTrie();
 
+	/** Number of spaces in one indentation unit. */
+    static final int INDENTATION = 3;
+
 	/** The size in bits of an int. */
-	static protected int INT_SIZE = 32;
-	
+	static protected int INT_SIZE = 5;
+
 	/** The label at this node. Defined only on leaves. */
 	abstract public int label() throws Exception;
-	
+
 	/** True if this Trie is a leaf (containing a single String). */
 	abstract public boolean isLeaf();
-	
+
 	/** True if this Trie is empty */
 	abstract public boolean isEmpty();
 
-	/** returns child at zero for bit==0 and 
+	/** returns child at zero for bit==0 and
 	 *  and child at one for bit==1. Works just for innerTrie. */
 	abstract protected BitTrie child(int bit) throws Exception;
 
@@ -48,7 +47,7 @@ public abstract class BitTrie {
 			InnerTrie newNode = new InnerTrie(bit, insert(n, level + 1));
 			return newNode;
 		} else {
-			setChild(bit, insert(n, level + 1));
+			setChild(bit, child(bit).insert(n, level + 1));
 			return this;
 		}
 	}
@@ -77,8 +76,8 @@ public abstract class BitTrie {
 			return child(bit).isIn(x, level + 1);
 	}
 
-	/** Returns the Nth bit of an int NUM beginning 
-	 *  the idexing from the left. Throws index out of bounds. */
+	/** Returns the Nth bit of an int NUM beginning
+	 *  the indexing from the left. Throws index out of bounds. */
 	protected int getBit(int num, int n) {
 		if (n < 0 || n > INT_SIZE - 1)
 			return -1;
@@ -88,16 +87,48 @@ public abstract class BitTrie {
 		return 1;
 	}
 
+	public void print() throws Exception {
+	    print("root", 0);
+	}
+
+	private void print(Object obj, int indent) throws Exception {
+	    if (isEmpty())
+	        println(obj + "  E", indent);
+	    else if (isLeaf()) {
+	        String strFormat = "%" + INT_SIZE + "s";
+	        String str = (String.format(
+	                strFormat, Integer.toBinaryString(label())).replace(" ", "0"));
+	        println(obj + "  " + str + "  " + label(), indent);
+	    } else {
+	        child(0).print(0, indent + INDENTATION);
+	        println(obj, indent);
+	        child(1).print(1, indent + INDENTATION);
+	    }
+
+	}
+
+	private void println(Object obj, int indent) {
+	    for (int k = 0; k < indent * INDENTATION; k += 1) {
+            System.out.print(" ");
+        }
+	    System.out.println(obj);
+	}
+
 }
 
 
 /** Representation of an empty trie. */
 class EmptyTrie extends BitTrie {
-	public int label() throws Exception {throw new Exception();}
-	public boolean isLeaf() {return false;}
-	public boolean isEmpty() {return true;}
-	protected BitTrie child(int bit) throws Exception {throw new Exception();}
-	protected void setChild(int bit, BitTrie newChild) throws Exception {throw new Exception();}
+	@Override
+    public int label() throws Exception {throw new Exception();}
+	@Override
+    public boolean isLeaf() {return false;}
+	@Override
+    public boolean isEmpty() {return true;}
+	@Override
+    protected BitTrie child(int bit) throws Exception {throw new Exception();}
+	@Override
+    protected void setChild(int bit, BitTrie newChild) throws Exception {throw new Exception();}
 }
 
 /** Representation of a leaf trie. */
@@ -107,11 +138,16 @@ class LeafTrie extends BitTrie {
 	public LeafTrie(int label) {
 		_label = label;
 	}
-	public int label() throws Exception {return _label;}
-	public boolean isLeaf() {return true;}
-	public boolean isEmpty() {return false;}
-	protected BitTrie child(int bit) throws Exception {throw new Exception();}
-	protected void setChild(int bit, BitTrie newChild) throws Exception {throw new Exception();}
+	@Override
+    public int label() throws Exception {return _label;}
+	@Override
+    public boolean isLeaf() {return true;}
+	@Override
+    public boolean isEmpty() {return false;}
+	@Override
+    protected BitTrie child(int bit) throws Exception {throw new Exception();}
+	@Override
+    protected void setChild(int bit, BitTrie newChild) throws Exception {throw new Exception();}
 }
 
 /** Representation of an inner trie. */
@@ -131,17 +167,22 @@ class InnerTrie extends BitTrie {
 		_zero = EMPTY;
 		_one = EMPTY;
 		setChild(bit, newChild);
-		
+
 	}
-	public int label() throws Exception {throw new Exception();}
-	public boolean isLeaf() {return false;}
-	public boolean isEmpty() {return false;}
-	protected BitTrie child(int bit) throws Exception {
+	@Override
+    public int label() throws Exception {throw new Exception();}
+	@Override
+    public boolean isLeaf() {return false;}
+	@Override
+    public boolean isEmpty() {return false;}
+	@Override
+    protected BitTrie child(int bit) throws Exception {
 		if (bit == 0)
 			return _zero;
 		return _one;
 	}
-	protected void setChild(int bit, BitTrie newChild) {
+	@Override
+    protected void setChild(int bit, BitTrie newChild) {
 		if (bit == 0)
 			_zero = newChild;
 		else
