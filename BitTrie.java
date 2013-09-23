@@ -8,7 +8,7 @@ public abstract class BitTrie {
     static final int INDENTATION = 3;
 
 	/** The size in bits of an int. */
-	static protected int INT_SIZE = 5;
+	static protected int INT_SIZE = 32;
 
 	/** The label at this node. Defined only on leaves. */
 	abstract public int label() throws Exception;
@@ -53,10 +53,23 @@ public abstract class BitTrie {
 	}
 
 
-	/** The result of removing X from this Trie, if it is present.
-	 *  The trie is unchanged if X is not present. */
-	public BitTrie remove(int x) throws Exception {
-		return null;
+	/** The result of removing N from this Trie, if it is present.
+	 *  The trie is unchanged if N is not present. */
+	public BitTrie remove(int n) throws Exception {
+		return remove(n, 0);
+	}
+
+	/** Removes N assuming the trie is at LEVEL. Returns this. */
+	private BitTrie remove(int n, int level) throws Exception {
+		int bit = getBit(n, level);
+		if (isEmpty()) 
+			return this;
+		else if (isLeaf())
+			return EMPTY;
+		else {
+			setChild(bit, child(bit).remove(n, level + 1));
+			return this;
+		}
 	}
 
 	/** True if X is in this Trie. */
@@ -87,10 +100,12 @@ public abstract class BitTrie {
 		return 1;
 	}
 
+	/* Prints the bitTrie. */
 	public void print() throws Exception {
 	    print("root", 0);
 	}
 
+	/* Prints bitTrie starting at INDENT. */
 	private void print(Object obj, int indent) throws Exception {
 	    if (isEmpty())
 	        println(obj + "  E", indent);
@@ -107,6 +122,7 @@ public abstract class BitTrie {
 
 	}
 
+	/** Prints OBJ at INDENT. */
 	private void println(Object obj, int indent) {
 	    for (int k = 0; k < indent * INDENTATION; k += 1) {
             System.out.print(" ");
